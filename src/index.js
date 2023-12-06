@@ -38,11 +38,9 @@ document.addEventListener('DOMContentLoaded', function () {
       passSet = true;
       body.classList.add(NO_SCROLL);
     }
-    console.log(passSet);
 
     if (passSet) {
       password = attr('oovra', passButton.getAttribute('pass'));
-      console.log('password is ', password);
       passInput.addEventListener('input', function () {
         userInput = this.value;
         passError.style.display = 'none';
