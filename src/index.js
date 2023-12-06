@@ -91,9 +91,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (clickedTrigger) {
           console.log('clicked trigger');
           // Find the next dialog sibling and open it
-          const nextDialog = clickedTrigger.nextElementSibling;
-          openModal(nextDialog);
-          openLightbox = nextDialog;
+          const lightbox = clickedTrigger.nextElementSibling;
+          openModal(lightbox);
+          openLightbox = lightbox;
         }
         // Check if the clicked element is a close button inside a dialog
         else if (clickedClose) {
@@ -139,12 +139,23 @@ document.addEventListener('DOMContentLoaded', function () {
     const openModal = function (modal) {
       if (!modal) return;
       modal.showModal();
+      lightboxThumbnails(modal);
       body.classList.add(NO_SCROLL);
     };
     const closeModal = function (modal) {
       if (!modal) return;
       modal.close();
       body.classList.remove(NO_SCROLL);
+    };
+    const lightboxThumbnails = function (lightbox) {
+      const thumbnails = lightbox.querySelectorAll(LIGHTBOX_THUMBNAIL);
+      const lightboxImage = lightbox.querySelector(LIGHTBOX_IMAGE);
+      thumbnails.forEach(function (thumbnail) {
+        thumbnail.addEventListener('click', function () {
+          source = thumbnail.src;
+          lightboxImage.src = source;
+        });
+      });
     };
   };
   lightbox();
