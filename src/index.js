@@ -1,9 +1,12 @@
+import { attr } from './utilities';
+
 document.addEventListener('DOMContentLoaded', function () {
   // Comment out for production
   console.log('Local Script Loaded');
 
   //////////////////////////////
   //Global Variables
+  //Lightbox
   const LIGHTBOX_COMPONENT = '[lightbox-el="component"]';
   const LIGHTBOX_TRIGGER = '[lightbox-el="trigger"]';
   const LIGHTBOX_CLOSE_BTN = '[lightbox-el="close"]';
@@ -13,12 +16,71 @@ document.addEventListener('DOMContentLoaded', function () {
   const LIGHTBOX_THUMBNAIL = '[lightbox-el="thumbnail"]';
   const WORKS_ITEM = '[lightbox-el="works-item"]';
   const WORKS_LIST = '[lightbox-el="works-list"]';
+  //Password
+  const PASSWORD_COMPONENT = '[pass-el="component"]';
+  const PASSWORD_INPUT = '[pass-el="input"]';
+  const PASSWORD_BUTTON = '[pass-el="button"]';
+  const PASSWORD_ERROR = '[pass-el="error"]';
+  //General Variables
   const NO_SCROLL = 'no-scroll';
   const body = document.querySelector('body');
+
+  const password = function () {
+    const passComponent = document.querySelector(PASSWORD_COMPONENT);
+    const passInput = document.querySelector(PASSWORD_INPUT);
+    const passButton = document.querySelector(PASSWORD_BUTTON);
+    const passError = document.querySelector(PASSWORD_ERROR);
+    let passSet = false;
+    let userInput;
+    let password;
+    if (!passComponent || !passInput || !passButton) return;
+    if (!passComponent.classList.contains('w-condition-invisible')) {
+      passSet = true;
+      body.classList.add(NO_SCROLL);
+    }
+    console.log(passSet);
+
+    if (passSet) {
+      password = attr('oovra', passButton.getAttribute('pass'));
+      console.log('password is ', password);
+      passInput.addEventListener('input', function () {
+        userInput = this.value;
+        passError.style.display = 'none';
+
+        passInput.addEventListener('change', function () {
+          userInput = this.value;
+          passError.style.display = 'none';
+        });
+
+        passInput.addEventListener('keydown', function (e) {
+          if (e.which == 13) {
+            checkPassword();
+          }
+        });
+      });
+
+      function checkPassword() {
+        if (userInput === password) {
+          setTimeout(() => {
+            passComponent.style.display = 'none';
+            body.classList.remove(NO_SCROLL);
+          }, 800);
+        } else {
+          passError.style.display = 'block';
+        }
+      }
+
+      passButton.addEventListener('click', function () {
+        checkPassword();
+      });
+    }
+  };
+  password();
 
   const lightbox = function () {
     const worksList = document.querySelector(WORKS_LIST);
     worksList.addEventListener('click', (e) => {
+      let openLightbox = false;
       const processClick = function (e) {
         // Check if the clicked element is an open button
         const worksItem = e.target.closest(WORKS_ITEM);
@@ -33,12 +95,14 @@ document.addEventListener('DOMContentLoaded', function () {
           // Find the next dialog sibling and open it
           const nextDialog = clickedTrigger.nextElementSibling;
           openModal(nextDialog);
+          openLightbox = nextDialog;
         }
         // Check if the clicked element is a close button inside a dialog
         else if (clickedClose) {
           // Find the closest dialog parent and close it
           const dialog = clickedClose.closest(LIGHTBOX_COMPONENT);
           closeModal(dialog);
+          openLightbox = false;
         }
         // Check if the clicked element is a close button inside a dialog
         else if (clickedNext) {
@@ -47,17 +111,31 @@ document.addEventListener('DOMContentLoaded', function () {
           const nextLightbox = nextItem.querySelector(LIGHTBOX_COMPONENT);
           closeModal(currentLightbox);
           openModal(nextLightbox);
+          openLightbox = nextLightbox;
         }
         // Check if the clicked element is a close button inside a dialog
         else if (clickedPrevious) {
           const currentLightbox = clickedPrevious.closest(LIGHTBOX_COMPONENT);
           const previousItem = worksItem.previousElementSibling;
           const previousLightbox = previousItem.querySelector(LIGHTBOX_COMPONENT);
-          closeModal(previousLightbox);
-          openModal(currentLightbox);
+          closeModal(currentLightbox);
+          openModal(previousLightbox);
+          openLightbox = previousLightbox;
         }
       };
       processClick(e);
+      window.addEventListener('keydown', (e) => {
+        // if (e.defaultPrevented) {
+        //   return; // Do nothing if the event was already processed
+        // }
+        if (e.key == 'Escape') {
+          if (openLightbox !== false) {
+            closeModal(openLightbox);
+            openLightbox = false;
+          }
+          console.log('Esc key pressed.');
+        }
+      });
     });
 
     const openModal = function (modal) {
