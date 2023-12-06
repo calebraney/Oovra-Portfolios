@@ -793,20 +793,21 @@
     const TXT_LINK_BACK = '[text-link="back"]';
     const NO_SCROLL = "no-scroll";
     const body = document.querySelector("body");
-    const password = function() {
+    let openLightbox = false;
+    let userInput;
+    let password;
+    const passwordFunction = function() {
       const passComponent = document.querySelector(PASSWORD_COMPONENT);
       const passInput = document.querySelector(PASSWORD_INPUT);
       const passButton = document.querySelector(PASSWORD_BUTTON);
       const passError = document.querySelector(PASSWORD_ERROR);
       let passSet = false;
-      let userInput;
-      let password2;
       if (!passComponent || !passInput || !passButton)
         return;
       const checkPassword = function() {
         const passBg = document.querySelector(PASSWORD_BG);
         const passWrap = document.querySelector(PASSWORD_WRAP);
-        if (userInput === password2) {
+        if (userInput === password) {
           const tl = gsap.timeline({
             onComplete: () => {
               passComponent.style.display = "none";
@@ -858,7 +859,7 @@
         passInput.focus();
       }
       if (passSet) {
-        password2 = attr("oovra", passButton.getAttribute("pass"));
+        password = attr("oovra", passButton.getAttribute("pass"));
         passInput.addEventListener("input", function() {
           userInput = this.value;
           passError.style.display = "none";
@@ -866,9 +867,6 @@
             userInput = this.value;
             passError.style.display = "none";
           });
-        });
-        passButton.addEventListener("click", function() {
-          checkPassword();
         });
         window.addEventListener("keydown", (e) => {
           if (e.key == "Tab" && e.target === passButton) {
@@ -878,6 +876,9 @@
             checkPassword();
           }
         });
+        passButton.addEventListener("click", function() {
+          checkPassword();
+        });
       }
     };
     const lightbox = function() {
@@ -885,7 +886,6 @@
       if (!worksList)
         return;
       worksList.addEventListener("click", (e) => {
-        let openLightbox = false;
         const processClick = function(e2) {
           const worksItem = e2.target.closest(WORKS_ITEM);
           if (!worksItem)
@@ -920,12 +920,12 @@
         };
         processClick(e);
         window.addEventListener("keydown", (e2) => {
-          if (e2.key == "Escape") {
-            if (openLightbox !== false) {
-              closeModal(openLightbox);
-              openLightbox = false;
-            }
-            console.log("Esc key pressed.");
+          if (e2.defaultPrevented) {
+            return;
+          }
+          if (e2.key == "Escape" || openLightbox !== false) {
+            closeModal(openLightbox);
+            openLightbox = false;
           }
         });
       });
@@ -1142,7 +1142,7 @@
         },
         (context) => {
           let { isMobile, isTablet, isDesktop, reduceMotion } = context.conditions;
-          password();
+          passwordFunction();
           lightbox();
           if (!reduceMotion) {
             scrollHeading();

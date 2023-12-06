@@ -40,18 +40,20 @@ document.addEventListener('DOMContentLoaded', function () {
   //General Variables
   const NO_SCROLL = 'no-scroll';
   const body = document.querySelector('body');
+  let openLightbox = false;
+  let userInput;
+  let password;
 
   //////////////////////////////
   // Functionality
 
-  const password = function () {
+  const passwordFunction = function () {
     const passComponent = document.querySelector(PASSWORD_COMPONENT);
     const passInput = document.querySelector(PASSWORD_INPUT);
     const passButton = document.querySelector(PASSWORD_BUTTON);
     const passError = document.querySelector(PASSWORD_ERROR);
     let passSet = false;
-    let userInput;
-    let password;
+
     if (!passComponent || !passInput || !passButton) return;
 
     // function to check password an either hide modal or show
@@ -122,18 +124,6 @@ document.addEventListener('DOMContentLoaded', function () {
           userInput = this.value;
           passError.style.display = 'none';
         });
-        // handle key events on input field
-        // passInput.addEventListener('keydown', function (e) {
-        //   console.log(e);
-        //   //check if enter was pressed
-        //   if (e.which == 13) {
-        //     checkPassword();
-        //   }
-        // });
-      });
-
-      passButton.addEventListener('click', function () {
-        checkPassword();
       });
 
       window.addEventListener('keydown', (e) => {
@@ -146,6 +136,9 @@ document.addEventListener('DOMContentLoaded', function () {
           checkPassword();
         }
       });
+      passButton.addEventListener('click', function () {
+        checkPassword();
+      });
     }
   };
 
@@ -153,7 +146,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const worksList = document.querySelector(WORKS_LIST);
     if (!worksList) return;
     worksList.addEventListener('click', (e) => {
-      let openLightbox = false;
       const processClick = function (e) {
         // Check if the clicked element is an open button
         const worksItem = e.target.closest(WORKS_ITEM);
@@ -197,15 +189,12 @@ document.addEventListener('DOMContentLoaded', function () {
       };
       processClick(e);
       window.addEventListener('keydown', (e) => {
-        // if (e.defaultPrevented) {
-        //   return; // Do nothing if the event was already processed
-        // }
-        if (e.key == 'Escape') {
-          if (openLightbox !== false) {
-            closeModal(openLightbox);
-            openLightbox = false;
-          }
-          console.log('Esc key pressed.');
+        if (e.defaultPrevented) {
+          return; // Do nothing if the event was already processed
+        }
+        if (e.key == 'Escape' || openLightbox !== false) {
+          closeModal(openLightbox);
+          openLightbox = false;
         }
       });
     });
@@ -430,7 +419,7 @@ document.addEventListener('DOMContentLoaded', function () {
       (context) => {
         let { isMobile, isTablet, isDesktop, reduceMotion } = context.conditions;
         // run animation functions
-        password();
+        passwordFunction();
         lightbox();
         if (!reduceMotion) {
           scrollHeading();
