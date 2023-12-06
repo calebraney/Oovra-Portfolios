@@ -1,6 +1,5 @@
 import { attr } from './utilities';
 import { runSplit } from './utilities';
-import SplitType from 'split-type';
 
 document.addEventListener('DOMContentLoaded', function () {
   // Comment out for production
@@ -8,7 +7,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   gsap.registerPlugin(ScrollTrigger);
   gsap.registerPlugin(Flip);
-  gsap.registerPlugin(TextPlugin);
 
   //////////////////////////////
   //Global Variables
@@ -24,6 +22,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const WORKS_LIST = '[lightbox-el="works-list"]';
   //Password
   const PASSWORD_COMPONENT = '[pass-el="component"]';
+  const PASSWORD_BG = '[pass-el="bg"]';
+  const PASSWORD_WRAP = '[pass-el="wrap"]';
   const PASSWORD_INPUT = '[pass-el="input"]';
   const PASSWORD_BUTTON = '[pass-el="button"]';
   const PASSWORD_ERROR = '[pass-el="error"]';
@@ -33,10 +33,15 @@ document.addEventListener('DOMContentLoaded', function () {
   const SCROLL_LINE = '.line-fill';
   const SCROLL_CONTAINER = '[gsap-scroll="container"]';
   const SCROLL_STAGGER = '[gsap-scroll="stagger"]';
+  //Text Link
+  const TXT_LINK_COMPONENT = '[text-link="component"]';
+  const TXT_LINK_FRONT = '[text-link="front"]';
+  const TXT_LINK_BACK = '[text-link="back"]';
   //General Variables
   const NO_SCROLL = 'no-scroll';
   const body = document.querySelector('body');
 
+  //////////////////////////////
   // Functionality
 
   const password = function () {
@@ -48,9 +53,63 @@ document.addEventListener('DOMContentLoaded', function () {
     let userInput;
     let password;
     if (!passComponent || !passInput || !passButton) return;
+
+    // function to check password an either hide modal or show
+    const checkPassword = function () {
+      const passBg = document.querySelector(PASSWORD_BG);
+      const passWrap = document.querySelector(PASSWORD_WRAP);
+      if (userInput === password) {
+        const tl = gsap.timeline({
+          onComplete: () => {
+            passComponent.style.display = 'none';
+            body.classList.remove(NO_SCROLL);
+          },
+        });
+        tl.fromTo(
+          passBg,
+          {
+            height: '100%',
+          },
+          {
+            duration: 1,
+            height: '0%',
+            ease: 'power2.out',
+          }
+        );
+        tl.fromTo(
+          passWrap,
+          {
+            opacity: 1,
+          },
+          {
+            duration: 0.5,
+            opacity: 0,
+            ease: 'power2.out',
+          },
+          0.2
+        );
+        tl.fromTo(
+          passWrap,
+          {
+            y: '0%',
+          },
+          {
+            duration: 0.7,
+            y: '-25%',
+            ease: 'power2.in',
+          },
+          0
+        );
+      } else {
+        passError.style.display = 'block';
+      }
+    };
+
+    // if password is set show password modal, prevent body from scrolling and focus input field
     if (!passComponent.classList.contains('w-condition-invisible')) {
       passSet = true;
       body.classList.add(NO_SCROLL);
+      passInput.focus();
     }
 
     if (passSet) {
@@ -63,33 +122,36 @@ document.addEventListener('DOMContentLoaded', function () {
           userInput = this.value;
           passError.style.display = 'none';
         });
-
-        passInput.addEventListener('keydown', function (e) {
-          if (e.which == 13) {
-            checkPassword();
-          }
-        });
+        // handle key events on input field
+        // passInput.addEventListener('keydown', function (e) {
+        //   console.log(e);
+        //   //check if enter was pressed
+        //   if (e.which == 13) {
+        //     checkPassword();
+        //   }
+        // });
       });
-
-      function checkPassword() {
-        if (userInput === password) {
-          setTimeout(() => {
-            passComponent.style.display = 'none';
-            body.classList.remove(NO_SCROLL);
-          }, 800);
-        } else {
-          passError.style.display = 'block';
-        }
-      }
 
       passButton.addEventListener('click', function () {
         checkPassword();
+      });
+
+      window.addEventListener('keydown', (e) => {
+        // if key is tab and the target is the password Button, focus on the password input
+        if (e.key == 'Tab' && e.target === passButton) {
+          passInput.focus();
+        }
+        // if key is tab and the target is the password Button, focus on the password input
+        if (e.key == 'Enter' && e.target === passInput) {
+          checkPassword();
+        }
       });
     }
   };
 
   const lightbox = function () {
     const worksList = document.querySelector(WORKS_LIST);
+    if (!worksList) return;
     worksList.addEventListener('click', (e) => {
       let openLightbox = false;
       const processClick = function (e) {
@@ -102,7 +164,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const clickedNext = e.target.closest(LIGHTBOX_NEXT_BTN);
         const clickedPrevious = e.target.closest(LIGHTBOX_PREVIOUS_BTN);
         if (clickedTrigger) {
-          console.log('clicked trigger');
           // Find the next dialog sibling and open it
           const lightbox = clickedTrigger.nextElementSibling;
           openModal(lightbox);
@@ -308,6 +369,52 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   };
 
+  const textLinks = function () {
+    const items = gsap.utils.toArray(TXT_LINK_COMPONENT);
+    items.forEach((item) => {
+      if (!item) return;
+      const front = item.querySelector(TXT_LINK_FRONT);
+      const back = item.querySelector(TXT_LINK_BACK);
+      if (!front || !back) return;
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: {
+          duration: 0.3,
+          ease: 'power1.out',
+        },
+      });
+      tl.fromTo(
+        front,
+        {
+          y: '150%',
+          rotateZ: 15,
+        },
+        {
+          y: '0%',
+          rotateZ: 0,
+        }
+      );
+      tl.fromTo(
+        back,
+        {
+          y: '0%',
+          rotateZ: 0,
+        },
+        {
+          y: '-150%',
+          rotateZ: -15,
+        },
+        0
+      );
+      item.addEventListener('mouseover', function () {
+        tl.play();
+      });
+      item.addEventListener('mouseleave', function () {
+        tl.reverse();
+      });
+    });
+  };
+
   //////////////////////////////
   //Control Functions on page load
   const gsapInit = function () {
@@ -331,6 +438,7 @@ document.addEventListener('DOMContentLoaded', function () {
           scrollContainer();
           scrollStagger();
           scrollLine();
+          textLinks();
         }
       }
     );
