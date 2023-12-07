@@ -957,13 +957,13 @@
         const videoWrap = lightbox2.querySelector(LIGHTBOX_VID_WRAP);
         thumbnails.forEach(function(thumbnail) {
           thumbnail.addEventListener("click", function() {
-            videoWrap.classList.add(HIDE_CLASS);
+            videoWrap.style.display = "none";
             source = thumbnail.src;
             lightboxImage.src = source;
           });
         });
         videoThumbnail.addEventListener("click", function() {
-          videoWrap.classList.remove(HIDE_CLASS);
+          videoWrap.style.display = "flex";
         });
       };
     };
