@@ -18,6 +18,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const LIGHTBOX_PREVIOUS_BTN = '[lightbox-el="previous"]';
   const LIGHTBOX_IMAGE = '[lightbox-el="image"]';
   const LIGHTBOX_THUMBNAIL = '[lightbox-el="thumbnail"]';
+  const LIGHTBOX_VID_THUMBNAIL = '[lightbox-el="video-thumbnail"]';
+  const LIGHTBOX_VID = '[lightbox-el="video"]';
+  const LIGHTBOX_VID_WRAP = '[lightbox-el="video-wrap"]';
   const WORKS_ITEM = '[lightbox-el="works-item"]';
   const WORKS_LIST = '[lightbox-el="works-list"]';
   //Password
@@ -30,15 +33,17 @@ document.addEventListener('DOMContentLoaded', function () {
   //GSAP Selectors
   const SCROLL_HEADING = '[gsap-scroll="heading"]';
   const SCROLL_EL = '[gsap-scroll="el"]';
-  const SCROLL_LINE = '.line-fill';
+  const SCROLL_LINE = '[gsap-scroll="line"]';
   const SCROLL_CONTAINER = '[gsap-scroll="container"]';
   const SCROLL_STAGGER = '[gsap-scroll="stagger"]';
+
   //Text Link
   const TXT_LINK_COMPONENT = '[text-link="component"]';
   const TXT_LINK_FRONT = '[text-link="front"]';
   const TXT_LINK_BACK = '[text-link="back"]';
   //General Variables
   const NO_SCROLL = 'no-scroll';
+  const HIDE_CLASS = 'hide';
   const body = document.querySelector('body');
   let openLightbox = false;
   let userInput;
@@ -65,6 +70,7 @@ document.addEventListener('DOMContentLoaded', function () {
           onComplete: () => {
             passComponent.style.display = 'none';
             body.classList.remove(NO_SCROLL);
+            headerIn();
           },
         });
         tl.fromTo(
@@ -93,11 +99,11 @@ document.addEventListener('DOMContentLoaded', function () {
         tl.fromTo(
           passWrap,
           {
-            y: '0%',
+            scale: 1,
           },
           {
             duration: 0.7,
-            y: '-25%',
+            scale: 0.75,
             ease: 'power2.in',
           },
           0
@@ -112,6 +118,8 @@ document.addEventListener('DOMContentLoaded', function () {
       passSet = true;
       body.classList.add(NO_SCROLL);
       passInput.focus();
+    } else {
+      headerIn();
     }
 
     if (passSet) {
@@ -213,11 +221,19 @@ document.addEventListener('DOMContentLoaded', function () {
     const lightboxThumbnails = function (lightbox) {
       const thumbnails = lightbox.querySelectorAll(LIGHTBOX_THUMBNAIL);
       const lightboxImage = lightbox.querySelector(LIGHTBOX_IMAGE);
+      const videoThumbnail = lightbox.querySelector(LIGHTBOX_VID_THUMBNAIL);
+      const video = lightbox.querySelector(LIGHTBOX_VID);
+      const videoWrap = lightbox.querySelector(LIGHTBOX_VID_WRAP);
+
       thumbnails.forEach(function (thumbnail) {
         thumbnail.addEventListener('click', function () {
+          videoWrap.classList.add(HIDE_CLASS);
           source = thumbnail.src;
           lightboxImage.src = source;
         });
+      });
+      videoThumbnail.addEventListener('click', function () {
+        videoWrap.classList.remove(HIDE_CLASS);
       });
     };
   };
@@ -402,6 +418,79 @@ document.addEventListener('DOMContentLoaded', function () {
         tl.reverse();
       });
     });
+  };
+
+  const headerIn = function () {
+    const header = document.querySelector('.header_component');
+    const h1 = gsap.utils.toArray('[gsap-load="h1"]');
+    const subtitles = gsap.utils.toArray('.header_left p');
+    const horLine = document.querySelector('.header_left .line-fill');
+    const links = gsap.utils.toArray('.nav_layout .text-link_component');
+    const navLine = document.querySelector('.nav_line .line-fill');
+    const tl = gsap.timeline({
+      defaults: {
+        duration: 0.6,
+        ease: 'power1.out',
+      },
+    });
+    tl.set(header, { opacity: 1 });
+    tl.fromTo(
+      h1,
+      {
+        opacity: 0,
+        y: '2rem',
+      },
+      {
+        opacity: 1,
+        y: '0rem',
+      }
+    );
+    tl.fromTo(
+      subtitles,
+      {
+        opacity: 0,
+        y: '2rem',
+      },
+      {
+        opacity: 1,
+        y: '0rem',
+        stagger: { each: 0.1, from: 'start' },
+      },
+      '<.2'
+    );
+    tl.fromTo(
+      horLine,
+      {
+        width: '0%',
+      },
+      {
+        width: '100%',
+      },
+      '<.2'
+    );
+    tl.fromTo(
+      links,
+      {
+        opacity: 0,
+        y: '2rem',
+      },
+      {
+        opacity: 1,
+        y: '0rem',
+        stagger: { each: 0.2, from: 'start' },
+      },
+      '<'
+    );
+    tl.fromTo(
+      navLine,
+      {
+        height: '0%',
+      },
+      {
+        height: '100%',
+      },
+      '<'
+    );
   };
 
   //////////////////////////////
