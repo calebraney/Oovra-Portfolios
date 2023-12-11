@@ -906,53 +906,64 @@
         const lightboxTrigger = item.querySelector(LIGHTBOX_TRIGGER);
         const videoWrap = item.querySelector(LIGHTBOX_VID_WRAP);
         const video = item.querySelector(LIGHTBOX_VID);
+        let player = false;
         if (!videoWrap.classList.contains("w-condition-invisible")) {
-          const player2 = makeVideo(video);
+          player = makeVideo(video);
         }
         item.addEventListener("keydown", (e) => {
-          console.log(e);
           if (e.key === "Enter" && e.target === lightboxTrigger) {
-            console.log(lightbox2);
-            openModal(lightbox2);
+            openModal(lightbox2, player);
           }
           if (e.key === "Escape" && activeLightbox !== false) {
-            closeModal(activeLightbox);
+            closeModal(lightbox2, player);
           }
         });
         item.addEventListener("click", (e) => {
           if (e.target.closest(LIGHTBOX_TRIGGER) !== null) {
-            openModal(lightbox2);
+            openModal(lightbox2, player);
           } else if (e.target.closest(LIGHTBOX_CLOSE_BTN) !== null) {
-            closeModal(lightbox2);
+            closeModal(lightbox2, player);
+            if (player) {
+              player.pause();
+            }
           } else if (e.target.closest(LIGHTBOX_NEXT_BTN) !== null) {
             const nextItem = item.nextElementSibling;
             const nextLightbox = nextItem.querySelector(LIGHTBOX_COMPONENT);
-            closeModal(lightbox2);
+            closeModal(lightbox2, player);
+            if (player) {
+              player.pause();
+            }
             openModal(nextLightbox);
           } else if (e.target.closest(LIGHTBOX_PREVIOUS_BTN) !== null) {
             const previousItem = item.previousElementSibling;
             const previousLightbox = previousItem.querySelector(LIGHTBOX_COMPONENT);
-            closeModal(lightbox2);
+            closeModal(lightbox2, player);
+            if (player) {
+              player.pause();
+            }
             openModal(previousLightbox);
           }
         });
       });
-      const openModal = function(lightbox2) {
+      const openModal = function(lightbox2, player) {
         if (!lightbox2)
           return;
         lightbox2.showModal();
-        lightboxThumbnails(lightbox2);
+        lightboxThumbnails(lightbox2, player);
         body.classList.add(NO_SCROLL);
         activeLightbox = lightbox2;
       };
-      const closeModal = function(lightbox2) {
+      const closeModal = function(lightbox2, player) {
         if (!lightbox2)
           return;
+        if (player) {
+          player.pause();
+        }
         lightbox2.close();
         body.classList.remove(NO_SCROLL);
         activeLightbox = false;
       };
-      const lightboxThumbnails = function(lightbox2) {
+      const lightboxThumbnails = function(lightbox2, player) {
         const thumbnails = lightbox2.querySelectorAll(LIGHTBOX_THUMBNAIL);
         const lightboxImage = lightbox2.querySelector(LIGHTBOX_IMAGE);
         const videoThumbnail = lightbox2.querySelector(LIGHTBOX_VID_THUMBNAIL);
@@ -962,7 +973,9 @@
             videoWrap.classList.add(HIDE_CLASS);
             source = thumbnail.src;
             lightboxImage.src = source;
-            player.pause();
+            if (player) {
+              player.pause();
+            }
           });
         });
         videoThumbnail.addEventListener("click", function() {

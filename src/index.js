@@ -172,21 +172,20 @@ document.addEventListener('DOMContentLoaded', function () {
       const lightboxTrigger = item.querySelector(LIGHTBOX_TRIGGER);
       const videoWrap = item.querySelector(LIGHTBOX_VID_WRAP);
       const video = item.querySelector(LIGHTBOX_VID);
+      let player = false;
       if (!videoWrap.classList.contains('w-condition-invisible')) {
-        const player = makeVideo(video);
+        player = makeVideo(video);
       }
 
       // process key events in the lightbox
       item.addEventListener('keydown', (e) => {
-        console.log(e);
         // if key is Enter and the target is the lightbox trigger, open lightbox
         if (e.key === 'Enter' && e.target === lightboxTrigger) {
-          console.log(lightbox);
-          openModal(lightbox);
+          openModal(lightbox, player);
         }
         // if escape is pressed when lightbox is open, close lightbox
         if (e.key === 'Escape' && activeLightbox !== false) {
-          closeModal(activeLightbox);
+          closeModal(lightbox, player);
         }
       });
 
@@ -195,45 +194,57 @@ document.addEventListener('DOMContentLoaded', function () {
         // if the click target was in the lightbox trigger
         if (e.target.closest(LIGHTBOX_TRIGGER) !== null) {
           // Find the next dialog sibling and open it
-          openModal(lightbox);
+          openModal(lightbox, player);
         }
         // Check if the clicked element is a close button inside a dialog
         else if (e.target.closest(LIGHTBOX_CLOSE_BTN) !== null) {
           // Find the closest dialog parent and close it
-          closeModal(lightbox);
+          closeModal(lightbox, player);
+          if (player) {
+            player.pause();
+          }
         }
         // Check if the clicked element is a close button inside a dialog
         else if (e.target.closest(LIGHTBOX_NEXT_BTN) !== null) {
           const nextItem = item.nextElementSibling;
           const nextLightbox = nextItem.querySelector(LIGHTBOX_COMPONENT);
-          closeModal(lightbox);
+          closeModal(lightbox, player);
+          if (player) {
+            player.pause();
+          }
           openModal(nextLightbox);
         }
         // Check if the clicked element is a close button inside a dialog
         else if (e.target.closest(LIGHTBOX_PREVIOUS_BTN) !== null) {
           const previousItem = item.previousElementSibling;
           const previousLightbox = previousItem.querySelector(LIGHTBOX_COMPONENT);
-          closeModal(lightbox);
+          closeModal(lightbox, player);
+          if (player) {
+            player.pause();
+          }
           openModal(previousLightbox);
         }
       });
     });
 
-    const openModal = function (lightbox) {
+    const openModal = function (lightbox, player) {
       if (!lightbox) return;
       lightbox.showModal();
-      lightboxThumbnails(lightbox);
+      lightboxThumbnails(lightbox, player);
       body.classList.add(NO_SCROLL);
       activeLightbox = lightbox;
     };
-    const closeModal = function (lightbox) {
+    const closeModal = function (lightbox, player) {
       if (!lightbox) return;
+      if (player) {
+        player.pause();
+      }
       lightbox.close();
       body.classList.remove(NO_SCROLL);
       activeLightbox = false;
     };
 
-    const lightboxThumbnails = function (lightbox) {
+    const lightboxThumbnails = function (lightbox, player) {
       const thumbnails = lightbox.querySelectorAll(LIGHTBOX_THUMBNAIL);
       const lightboxImage = lightbox.querySelector(LIGHTBOX_IMAGE);
       const videoThumbnail = lightbox.querySelector(LIGHTBOX_VID_THUMBNAIL);
@@ -244,7 +255,9 @@ document.addEventListener('DOMContentLoaded', function () {
           videoWrap.classList.add(HIDE_CLASS);
           source = thumbnail.src;
           lightboxImage.src = source;
-          player.pause();
+          if (player) {
+            player.pause();
+          }
         });
       });
       videoThumbnail.addEventListener('click', function () {
