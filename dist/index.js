@@ -883,6 +883,9 @@
           });
         });
         window.addEventListener("keydown", (e) => {
+          if (e.key == "Tab" && e.target === passInput) {
+            passButton.focus();
+          }
           if (e.key == "Tab" && e.target === passButton) {
             passInput.focus();
           }

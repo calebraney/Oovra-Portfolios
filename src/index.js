@@ -147,6 +147,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
       window.addEventListener('keydown', (e) => {
         // if key is tab and the target is the password Button, focus on the password input
+        if (e.key == 'Tab' && e.target === passInput) {
+          passButton.focus();
+        }
+        // if key is tab and the target is the password Button, focus on the password input
         if (e.key == 'Tab' && e.target === passButton) {
           passInput.focus();
         }
