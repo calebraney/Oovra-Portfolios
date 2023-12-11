@@ -765,7 +765,6 @@
 
   // src/index.js
   document.addEventListener("DOMContentLoaded", function() {
-    console.log("Local Script Loaded");
     gsap.registerPlugin(ScrollTrigger);
     gsap.registerPlugin(Flip);
     const LIGHTBOX_COMPONENT = '[lightbox-el="component"]';
@@ -797,7 +796,7 @@
     const NO_SCROLL = "no-scroll";
     const HIDE_CLASS = "hide";
     const body = document.querySelector("body");
-    let openLightbox = false;
+    let activeLightbox = false;
     let userInput;
     let password;
     const passwordFunction = function() {
@@ -812,9 +811,10 @@
         const passBg = document.querySelector(PASSWORD_BG);
         const passWrap = document.querySelector(PASSWORD_WRAP);
         if (userInput === password) {
+          localStorage.setItem(page, "true");
           const tl = gsap.timeline({
             onComplete: () => {
-              passComponent.style.display = "none";
+              passComponent.classList.add(HIDE_CLASS);
               body.classList.remove(NO_SCROLL);
               headerIn();
             }
@@ -855,24 +855,31 @@
             0
           );
         } else {
-          passError.style.display = "block";
+          passError.classList.remove(HIDE_CLASS);
         }
       };
-      if (!passComponent.classList.contains("w-condition-invisible")) {
+      let visited = false;
+      const page = window.location.pathname;
+      if (localStorage.getItem(page) !== null) {
+        visited = true;
+      }
+      if (!passComponent.classList.contains("w-condition-invisible") && visited === false) {
         passSet = true;
+        window.scrollTo(0, 0);
         body.classList.add(NO_SCROLL);
         passInput.focus();
       } else {
+        passComponent.classList.add(HIDE_CLASS);
         headerIn();
       }
       if (passSet) {
         password = attr("oovra", passButton.getAttribute("pass"));
         passInput.addEventListener("input", function() {
           userInput = this.value;
-          passError.style.display = "none";
+          passError.classList.add(HIDE_CLASS);
           passInput.addEventListener("change", function() {
             userInput = this.value;
-            passError.style.display = "none";
+            passError.classList.add(HIDE_CLASS);
           });
         });
         window.addEventListener("keydown", (e) => {
@@ -889,83 +896,86 @@
       }
     };
     const lightbox = function() {
-      const worksList = document.querySelector(WORKS_LIST);
-      if (!worksList)
+      const worksItems = document.querySelectorAll(WORKS_ITEM);
+      if (worksItems.length === 0)
         return;
-      worksList.addEventListener("click", (e) => {
-        const processClick = function(e2) {
-          const worksItem = e2.target.closest(WORKS_ITEM);
-          if (!worksItem)
-            return;
-          const clickedTrigger = e2.target.closest(LIGHTBOX_TRIGGER);
-          const clickedClose = e2.target.closest(LIGHTBOX_CLOSE_BTN);
-          const clickedNext = e2.target.closest(LIGHTBOX_NEXT_BTN);
-          const clickedPrevious = e2.target.closest(LIGHTBOX_PREVIOUS_BTN);
-          if (clickedTrigger) {
-            const lightbox2 = clickedTrigger.nextElementSibling;
+      worksItems.forEach((item) => {
+        const lightbox2 = item.querySelector(LIGHTBOX_COMPONENT);
+        if (!lightbox2)
+          return;
+        const lightboxTrigger = item.querySelector(LIGHTBOX_TRIGGER);
+        const videoWrap = item.querySelector(LIGHTBOX_VID_WRAP);
+        const video = item.querySelector(LIGHTBOX_VID);
+        if (!videoWrap.classList.contains("w-condition-invisible")) {
+          const player2 = makeVideo(video);
+        }
+        item.addEventListener("keydown", (e) => {
+          console.log(e);
+          if (e.key === "Enter" && e.target === lightboxTrigger) {
+            console.log(lightbox2);
             openModal(lightbox2);
-            openLightbox = lightbox2;
-          } else if (clickedClose) {
-            const dialog = clickedClose.closest(LIGHTBOX_COMPONENT);
-            closeModal(dialog);
-            openLightbox = false;
-          } else if (clickedNext) {
-            const currentLightbox = clickedNext.closest(LIGHTBOX_COMPONENT);
-            const nextItem = worksItem.nextElementSibling;
+          }
+          if (e.key === "Escape" && activeLightbox !== false) {
+            closeModal(activeLightbox);
+          }
+        });
+        item.addEventListener("click", (e) => {
+          if (e.target.closest(LIGHTBOX_TRIGGER) !== null) {
+            openModal(lightbox2);
+          } else if (e.target.closest(LIGHTBOX_CLOSE_BTN) !== null) {
+            closeModal(lightbox2);
+          } else if (e.target.closest(LIGHTBOX_NEXT_BTN) !== null) {
+            const nextItem = item.nextElementSibling;
             const nextLightbox = nextItem.querySelector(LIGHTBOX_COMPONENT);
-            closeModal(currentLightbox);
+            closeModal(lightbox2);
             openModal(nextLightbox);
-            openLightbox = nextLightbox;
-          } else if (clickedPrevious) {
-            const currentLightbox = clickedPrevious.closest(LIGHTBOX_COMPONENT);
-            const previousItem = worksItem.previousElementSibling;
+          } else if (e.target.closest(LIGHTBOX_PREVIOUS_BTN) !== null) {
+            const previousItem = item.previousElementSibling;
             const previousLightbox = previousItem.querySelector(LIGHTBOX_COMPONENT);
-            closeModal(currentLightbox);
+            closeModal(lightbox2);
             openModal(previousLightbox);
-            openLightbox = previousLightbox;
-          }
-        };
-        processClick(e);
-        window.addEventListener("keydown", (e2) => {
-          if (e2.defaultPrevented) {
-            return;
-          }
-          if (e2.key == "Escape" || openLightbox !== false) {
-            closeModal(openLightbox);
-            openLightbox = false;
           }
         });
       });
-      const openModal = function(modal) {
-        if (!modal)
+      const openModal = function(lightbox2) {
+        if (!lightbox2)
           return;
-        modal.showModal();
-        lightboxThumbnails(modal);
+        lightbox2.showModal();
+        lightboxThumbnails(lightbox2);
         body.classList.add(NO_SCROLL);
+        activeLightbox = lightbox2;
       };
-      const closeModal = function(modal) {
-        if (!modal)
+      const closeModal = function(lightbox2) {
+        if (!lightbox2)
           return;
-        modal.close();
+        lightbox2.close();
         body.classList.remove(NO_SCROLL);
+        activeLightbox = false;
       };
       const lightboxThumbnails = function(lightbox2) {
         const thumbnails = lightbox2.querySelectorAll(LIGHTBOX_THUMBNAIL);
         const lightboxImage = lightbox2.querySelector(LIGHTBOX_IMAGE);
         const videoThumbnail = lightbox2.querySelector(LIGHTBOX_VID_THUMBNAIL);
-        const video = lightbox2.querySelector(LIGHTBOX_VID);
         const videoWrap = lightbox2.querySelector(LIGHTBOX_VID_WRAP);
         thumbnails.forEach(function(thumbnail) {
           thumbnail.addEventListener("click", function() {
-            videoWrap.style.display = "none";
+            videoWrap.classList.add(HIDE_CLASS);
             source = thumbnail.src;
             lightboxImage.src = source;
+            player.pause();
           });
         });
         videoThumbnail.addEventListener("click", function() {
-          videoWrap.style.display = "flex";
+          videoWrap.classList.remove(HIDE_CLASS);
         });
       };
+    };
+    const makeVideo = function(video) {
+      let videoPlayer = new Plyr(video, {
+        controls: ["play", "progress", "current-time", "mute", "fullscreen"],
+        resetOnEnd: true
+      });
+      return videoPlayer;
     };
     const scrollTL = function(item) {
       const settings = {
@@ -1217,6 +1227,8 @@
         "<"
       );
     };
+    passwordFunction();
+    lightbox();
     const gsapInit = function() {
       let mm = gsap.matchMedia();
       mm.add(
@@ -1228,8 +1240,6 @@
         },
         (context) => {
           let { isMobile, isTablet, isDesktop, reduceMotion } = context.conditions;
-          passwordFunction();
-          lightbox();
           if (!reduceMotion) {
             scrollHeading();
             scrollEl();

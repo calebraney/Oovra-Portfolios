@@ -3,7 +3,6 @@ import { runSplit } from './utilities';
 
 document.addEventListener('DOMContentLoaded', function () {
   // Comment out for production
-  console.log('Local Script Loaded');
 
   gsap.registerPlugin(ScrollTrigger);
   gsap.registerPlugin(Flip);
@@ -45,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const NO_SCROLL = 'no-scroll';
   const HIDE_CLASS = 'hide';
   const body = document.querySelector('body');
-  let openLightbox = false;
+  let activeLightbox = false;
   let userInput;
   let password;
 
@@ -66,9 +65,11 @@ document.addEventListener('DOMContentLoaded', function () {
       const passBg = document.querySelector(PASSWORD_BG);
       const passWrap = document.querySelector(PASSWORD_WRAP);
       if (userInput === password) {
+        // set password cookie
+        localStorage.setItem(page, 'true');
         const tl = gsap.timeline({
           onComplete: () => {
-            passComponent.style.display = 'none';
+            passComponent.classList.add(HIDE_CLASS);
             body.classList.remove(NO_SCROLL);
             headerIn();
           },
@@ -109,16 +110,26 @@ document.addEventListener('DOMContentLoaded', function () {
           0
         );
       } else {
-        passError.style.display = 'block';
+        passError.classList.remove(HIDE_CLASS);
       }
     };
+    //manage cookies
+    let visited = false;
+    const page = window.location.pathname;
+    // Check if item has been set before
+    if (localStorage.getItem(page) !== null) {
+      // item is set
+      visited = true;
+    }
 
-    // if password is set show password modal, prevent body from scrolling and focus input field
-    if (!passComponent.classList.contains('w-condition-invisible')) {
+    // if password is set and page is not visited show password modal, prevent body from scrolling and focus input field
+    if (!passComponent.classList.contains('w-condition-invisible') && visited === false) {
       passSet = true;
+      window.scrollTo(0, 0);
       body.classList.add(NO_SCROLL);
       passInput.focus();
     } else {
+      passComponent.classList.add(HIDE_CLASS);
       headerIn();
     }
 
@@ -126,11 +137,11 @@ document.addEventListener('DOMContentLoaded', function () {
       password = attr('oovra', passButton.getAttribute('pass'));
       passInput.addEventListener('input', function () {
         userInput = this.value;
-        passError.style.display = 'none';
+        passError.classList.add(HIDE_CLASS);
 
         passInput.addEventListener('change', function () {
           userInput = this.value;
-          passError.style.display = 'none';
+          passError.classList.add(HIDE_CLASS);
         });
       });
 
@@ -151,91 +162,102 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   const lightbox = function () {
-    const worksList = document.querySelector(WORKS_LIST);
-    if (!worksList) return;
-    worksList.addEventListener('click', (e) => {
-      const processClick = function (e) {
-        // Check if the clicked element is an open button
-        const worksItem = e.target.closest(WORKS_ITEM);
-        // return if the target was not in a work item
-        if (!worksItem) return;
-        const clickedTrigger = e.target.closest(LIGHTBOX_TRIGGER);
-        const clickedClose = e.target.closest(LIGHTBOX_CLOSE_BTN);
-        const clickedNext = e.target.closest(LIGHTBOX_NEXT_BTN);
-        const clickedPrevious = e.target.closest(LIGHTBOX_PREVIOUS_BTN);
-        if (clickedTrigger) {
-          // Find the next dialog sibling and open it
-          const lightbox = clickedTrigger.nextElementSibling;
+    const worksItems = document.querySelectorAll(WORKS_ITEM);
+    if (worksItems.length === 0) return;
+    worksItems.forEach((item) => {
+      //get the lightbox within the works item
+      const lightbox = item.querySelector(LIGHTBOX_COMPONENT);
+      if (!lightbox) return;
+      //get other lightbox elements
+      const lightboxTrigger = item.querySelector(LIGHTBOX_TRIGGER);
+      const videoWrap = item.querySelector(LIGHTBOX_VID_WRAP);
+      const video = item.querySelector(LIGHTBOX_VID);
+      if (!videoWrap.classList.contains('w-condition-invisible')) {
+        const player = makeVideo(video);
+      }
+
+      // process key events in the lightbox
+      item.addEventListener('keydown', (e) => {
+        console.log(e);
+        // if key is Enter and the target is the lightbox trigger, open lightbox
+        if (e.key === 'Enter' && e.target === lightboxTrigger) {
+          console.log(lightbox);
           openModal(lightbox);
-          openLightbox = lightbox;
+        }
+        // if escape is pressed when lightbox is open, close lightbox
+        if (e.key === 'Escape' && activeLightbox !== false) {
+          closeModal(activeLightbox);
+        }
+      });
+
+      // process click events in the lightbox
+      item.addEventListener('click', (e) => {
+        // if the click target was in the lightbox trigger
+        if (e.target.closest(LIGHTBOX_TRIGGER) !== null) {
+          // Find the next dialog sibling and open it
+          openModal(lightbox);
         }
         // Check if the clicked element is a close button inside a dialog
-        else if (clickedClose) {
+        else if (e.target.closest(LIGHTBOX_CLOSE_BTN) !== null) {
           // Find the closest dialog parent and close it
-          const dialog = clickedClose.closest(LIGHTBOX_COMPONENT);
-          closeModal(dialog);
-          openLightbox = false;
+          closeModal(lightbox);
         }
         // Check if the clicked element is a close button inside a dialog
-        else if (clickedNext) {
-          const currentLightbox = clickedNext.closest(LIGHTBOX_COMPONENT);
-          const nextItem = worksItem.nextElementSibling;
+        else if (e.target.closest(LIGHTBOX_NEXT_BTN) !== null) {
+          const nextItem = item.nextElementSibling;
           const nextLightbox = nextItem.querySelector(LIGHTBOX_COMPONENT);
-          closeModal(currentLightbox);
+          closeModal(lightbox);
           openModal(nextLightbox);
-          openLightbox = nextLightbox;
         }
         // Check if the clicked element is a close button inside a dialog
-        else if (clickedPrevious) {
-          const currentLightbox = clickedPrevious.closest(LIGHTBOX_COMPONENT);
-          const previousItem = worksItem.previousElementSibling;
+        else if (e.target.closest(LIGHTBOX_PREVIOUS_BTN) !== null) {
+          const previousItem = item.previousElementSibling;
           const previousLightbox = previousItem.querySelector(LIGHTBOX_COMPONENT);
-          closeModal(currentLightbox);
+          closeModal(lightbox);
           openModal(previousLightbox);
-          openLightbox = previousLightbox;
-        }
-      };
-      processClick(e);
-      window.addEventListener('keydown', (e) => {
-        if (e.defaultPrevented) {
-          return; // Do nothing if the event was already processed
-        }
-        if (e.key == 'Escape' || openLightbox !== false) {
-          closeModal(openLightbox);
-          openLightbox = false;
         }
       });
     });
 
-    const openModal = function (modal) {
-      if (!modal) return;
-      modal.showModal();
-      lightboxThumbnails(modal);
+    const openModal = function (lightbox) {
+      if (!lightbox) return;
+      lightbox.showModal();
+      lightboxThumbnails(lightbox);
       body.classList.add(NO_SCROLL);
+      activeLightbox = lightbox;
     };
-    const closeModal = function (modal) {
-      if (!modal) return;
-      modal.close();
+    const closeModal = function (lightbox) {
+      if (!lightbox) return;
+      lightbox.close();
       body.classList.remove(NO_SCROLL);
+      activeLightbox = false;
     };
+
     const lightboxThumbnails = function (lightbox) {
       const thumbnails = lightbox.querySelectorAll(LIGHTBOX_THUMBNAIL);
       const lightboxImage = lightbox.querySelector(LIGHTBOX_IMAGE);
       const videoThumbnail = lightbox.querySelector(LIGHTBOX_VID_THUMBNAIL);
-      const video = lightbox.querySelector(LIGHTBOX_VID);
       const videoWrap = lightbox.querySelector(LIGHTBOX_VID_WRAP);
 
       thumbnails.forEach(function (thumbnail) {
         thumbnail.addEventListener('click', function () {
-          videoWrap.style.display = 'none';
+          videoWrap.classList.add(HIDE_CLASS);
           source = thumbnail.src;
           lightboxImage.src = source;
+          player.pause();
         });
       });
       videoThumbnail.addEventListener('click', function () {
-        videoWrap.style.display = 'flex';
+        videoWrap.classList.remove(HIDE_CLASS);
       });
     };
+  };
+  const makeVideo = function (video) {
+    let videoPlayer = new Plyr(video, {
+      controls: ['play', 'progress', 'current-time', 'mute', 'fullscreen'],
+      resetOnEnd: true,
+    });
+    return videoPlayer;
   };
 
   //////////////////////////////
@@ -495,6 +517,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   //////////////////////////////
   //Control Functions on page load
+  passwordFunction();
+  lightbox();
+
   const gsapInit = function () {
     let mm = gsap.matchMedia();
     mm.add(
@@ -508,8 +533,6 @@ document.addEventListener('DOMContentLoaded', function () {
       (context) => {
         let { isMobile, isTablet, isDesktop, reduceMotion } = context.conditions;
         // run animation functions
-        passwordFunction();
-        lightbox();
         if (!reduceMotion) {
           scrollHeading();
           scrollEl();
@@ -523,3 +546,19 @@ document.addEventListener('DOMContentLoaded', function () {
   };
   gsapInit();
 });
+
+/*
+//TRICKS EMBED
+<video style="width: 100%; height: 100%;" class="plyr_video" playsinline controls data-plyr-provider="youtube" >
+  <source src="{{wf {&quot;path&quot;:&quot;video-source&quot;,&quot;type&quot;:&quot;PlainText&quot;\} }}" type="video/mp4" />
+</video>
+
+//Github  Embed
+<div class="plyr__video-embed" id="player">
+  <iframe
+    src="https://www.youtube.com/embed/bTqVqk7FSmY?origin=https://plyr.io&amp;iv_load_policy=3&amp;modestbranding=1&amp;playsinline=1&amp;showinfo=0&amp;rel=0&amp;enablejsapi=1"
+    allowfullscreen
+    allowtransparency
+    allow="autoplay"
+  ></iframe>
+*/
