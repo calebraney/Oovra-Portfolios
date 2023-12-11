@@ -985,7 +985,7 @@
     };
     const makeVideo = function(video) {
       let videoPlayer = new Plyr(video, {
-        controls: ["play", "progress", "current-time", "mute", "fullscreen"],
+        controls: ["play-large", "play", "progress", "current-time", "mute", "fullscreen"],
         resetOnEnd: true
       });
       return videoPlayer;
