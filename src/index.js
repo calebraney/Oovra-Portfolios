@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   gsap.registerPlugin(ScrollTrigger);
   gsap.registerPlugin(Flip);
+  console.log('dev');
 
   //////////////////////////////
   //Global Variables
@@ -23,9 +24,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const WORKS_ITEM = '[lightbox-el="works-item"]';
   const WORKS_LIST = '[lightbox-el="works-list"]';
   //Password
+  const PASSWORD_WRAP = '[pass-el="wrap"]';
   const PASSWORD_COMPONENT = '[pass-el="component"]';
   const PASSWORD_BG = '[pass-el="bg"]';
-  const PASSWORD_WRAP = '[pass-el="wrap"]';
+  const PASSWORD_CARD = '[pass-el="card"]';
   const PASSWORD_INPUT = '[pass-el="input"]';
   const PASSWORD_BUTTON = '[pass-el="button"]';
   const PASSWORD_ERROR = '[pass-el="error"]';
@@ -52,18 +54,19 @@ document.addEventListener('DOMContentLoaded', function () {
   // Functionality
 
   const passwordFunction = function () {
+    const passWrap = document.querySelector(PASSWORD_WRAP);
     const passComponent = document.querySelector(PASSWORD_COMPONENT);
     const passInput = document.querySelector(PASSWORD_INPUT);
     const passButton = document.querySelector(PASSWORD_BUTTON);
     const passError = document.querySelector(PASSWORD_ERROR);
+    const passBg = document.querySelector(PASSWORD_BG);
+    const passCard = document.querySelector(PASSWORD_CARD);
     let passSet = false;
 
     if (!passComponent || !passInput || !passButton) return;
 
     // function to check password an either hide modal or show
     const checkPassword = function () {
-      const passBg = document.querySelector(PASSWORD_BG);
-      const passWrap = document.querySelector(PASSWORD_WRAP);
       if (userInput === password) {
         // set password cookie
         localStorage.setItem(page, 'true');
@@ -86,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
           }
         );
         tl.fromTo(
-          passWrap,
+          passCard,
           {
             opacity: 1,
           },
@@ -98,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
           0.2
         );
         tl.fromTo(
-          passWrap,
+          passCard,
           {
             scale: 1,
           },
@@ -118,22 +121,60 @@ document.addEventListener('DOMContentLoaded', function () {
     const page = window.location.pathname;
     // Check if item has been set before
     if (localStorage.getItem(page) !== null) {
-      // item is set
+      // item is set set visited to true
       visited = true;
     }
 
     // if password is set and page is not visited show password modal, prevent body from scrolling and focus input field
-    if (!passComponent.classList.contains('w-condition-invisible') && visited === false) {
-      passSet = true;
-      window.scrollTo(0, 0);
-      body.classList.add(NO_SCROLL);
-      passInput.focus();
-    } else {
+    if (!passWrap.classList.contains('w-condition-invisible') && visited === false) {
+      //animate password in
+      const tl = gsap.timeline({
+        onStart: () => {
+          passComponent.classList.remove(HIDE_CLASS);
+          passSet = true;
+          window.scrollTo(0, 0);
+          body.classList.add(NO_SCROLL);
+        },
+        onComplete: () => {
+          activatePassword();
+        },
+      });
+      tl.fromTo(
+        passBg,
+        {
+          opacity: '0%',
+        },
+        {
+          duration: 1,
+          opacity: '100%',
+          ease: 'power2.out',
+        }
+      );
+      tl.fromTo(
+        passCard,
+        {
+          opacity: 0,
+          scale: 0.75,
+        },
+        {
+          duration: 0.8,
+          opacity: 1,
+          scale: 1,
+          ease: 'power2.out',
+        },
+        0.2
+      );
+    }
+    // If password is not set
+    else {
       passComponent.classList.add(HIDE_CLASS);
       headerIn();
     }
-
-    if (passSet) {
+    // functionality of password checking
+    const activatePassword = function () {
+      //focus on the input field
+      passInput.focus();
+      //get the password
       password = attr('oovra', passButton.getAttribute('pass'));
       passInput.addEventListener('input', function () {
         userInput = this.value;
@@ -148,21 +189,24 @@ document.addEventListener('DOMContentLoaded', function () {
       window.addEventListener('keydown', (e) => {
         // if key is tab and the target is the password Button, focus on the password input
         if (e.key == 'Tab' && e.target === passInput) {
-          passButton.focus();
+          e.preventDefault();
+          passButton.focus({ preventScroll: true, focusVisible: true });
         }
         // if key is tab and the target is the password Button, focus on the password input
         if (e.key == 'Tab' && e.target === passButton) {
-          passInput.focus();
+          e.preventDefault();
+          passInput.focus({ preventScroll: true, focusVisible: true });
         }
         // if key is tab and the target is the password Button, focus on the password input
         if (e.key == 'Enter' && e.target === passInput) {
+          e.preventDefault();
           checkPassword();
         }
       });
       passButton.addEventListener('click', function () {
         checkPassword();
       });
-    }
+    };
   };
 
   const lightbox = function () {
@@ -396,6 +440,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const items = gsap.utils.toArray(SCROLL_STAGGER);
     items.forEach((item) => {
       const children = gsap.utils.toArray(item.children);
+      const stagger = attr(0.1, item.getAttribute('gsap-scroll-stagger'));
       if (children.length === 0) return;
       const tl = scrollTL(item);
       tl.fromTo(
@@ -407,7 +452,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
           opacity: 1,
           y: '0rem',
-          stagger: { each: 0.1, from: 'start' },
+          stagger: { each: stagger, from: 'start' },
         }
       );
     });

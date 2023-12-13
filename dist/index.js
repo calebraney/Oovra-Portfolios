@@ -767,6 +767,7 @@
   document.addEventListener("DOMContentLoaded", function() {
     gsap.registerPlugin(ScrollTrigger);
     gsap.registerPlugin(Flip);
+    console.log("dev");
     const LIGHTBOX_COMPONENT = '[lightbox-el="component"]';
     const LIGHTBOX_TRIGGER = '[lightbox-el="trigger"]';
     const LIGHTBOX_CLOSE_BTN = '[lightbox-el="close"]';
@@ -779,9 +780,10 @@
     const LIGHTBOX_VID_WRAP = '[lightbox-el="video-wrap"]';
     const WORKS_ITEM = '[lightbox-el="works-item"]';
     const WORKS_LIST = '[lightbox-el="works-list"]';
+    const PASSWORD_WRAP = '[pass-el="wrap"]';
     const PASSWORD_COMPONENT = '[pass-el="component"]';
     const PASSWORD_BG = '[pass-el="bg"]';
-    const PASSWORD_WRAP = '[pass-el="wrap"]';
+    const PASSWORD_CARD = '[pass-el="card"]';
     const PASSWORD_INPUT = '[pass-el="input"]';
     const PASSWORD_BUTTON = '[pass-el="button"]';
     const PASSWORD_ERROR = '[pass-el="error"]';
@@ -800,16 +802,17 @@
     let userInput;
     let password;
     const passwordFunction = function() {
+      const passWrap = document.querySelector(PASSWORD_WRAP);
       const passComponent = document.querySelector(PASSWORD_COMPONENT);
       const passInput = document.querySelector(PASSWORD_INPUT);
       const passButton = document.querySelector(PASSWORD_BUTTON);
       const passError = document.querySelector(PASSWORD_ERROR);
+      const passBg = document.querySelector(PASSWORD_BG);
+      const passCard = document.querySelector(PASSWORD_CARD);
       let passSet = false;
       if (!passComponent || !passInput || !passButton)
         return;
       const checkPassword = function() {
-        const passBg = document.querySelector(PASSWORD_BG);
-        const passWrap = document.querySelector(PASSWORD_WRAP);
         if (userInput === password) {
           localStorage.setItem(page, "true");
           const tl = gsap.timeline({
@@ -831,7 +834,7 @@
             }
           );
           tl.fromTo(
-            passWrap,
+            passCard,
             {
               opacity: 1
             },
@@ -843,7 +846,7 @@
             0.2
           );
           tl.fromTo(
-            passWrap,
+            passCard,
             {
               scale: 1
             },
@@ -863,16 +866,49 @@
       if (localStorage.getItem(page) !== null) {
         visited = true;
       }
-      if (!passComponent.classList.contains("w-condition-invisible") && visited === false) {
-        passSet = true;
-        window.scrollTo(0, 0);
-        body.classList.add(NO_SCROLL);
-        passInput.focus();
+      if (!passWrap.classList.contains("w-condition-invisible") && visited === false) {
+        const tl = gsap.timeline({
+          onStart: () => {
+            passComponent.classList.remove(HIDE_CLASS);
+            passSet = true;
+            window.scrollTo(0, 0);
+            body.classList.add(NO_SCROLL);
+          },
+          onComplete: () => {
+            activatePassword();
+          }
+        });
+        tl.fromTo(
+          passBg,
+          {
+            opacity: "0%"
+          },
+          {
+            duration: 1,
+            opacity: "100%",
+            ease: "power2.out"
+          }
+        );
+        tl.fromTo(
+          passCard,
+          {
+            opacity: 0,
+            scale: 0.75
+          },
+          {
+            duration: 0.8,
+            opacity: 1,
+            scale: 1,
+            ease: "power2.out"
+          },
+          0.2
+        );
       } else {
         passComponent.classList.add(HIDE_CLASS);
         headerIn();
       }
-      if (passSet) {
+      const activatePassword = function() {
+        passInput.focus();
         password = attr("oovra", passButton.getAttribute("pass"));
         passInput.addEventListener("input", function() {
           userInput = this.value;
@@ -884,19 +920,22 @@
         });
         window.addEventListener("keydown", (e) => {
           if (e.key == "Tab" && e.target === passInput) {
-            passButton.focus();
+            e.preventDefault();
+            passButton.focus({ preventScroll: true, focusVisible: true });
           }
           if (e.key == "Tab" && e.target === passButton) {
-            passInput.focus();
+            e.preventDefault();
+            passInput.focus({ preventScroll: true, focusVisible: true });
           }
           if (e.key == "Enter" && e.target === passInput) {
+            e.preventDefault();
             checkPassword();
           }
         });
         passButton.addEventListener("click", function() {
           checkPassword();
         });
-      }
+      };
     };
     const lightbox = function() {
       const worksItems = document.querySelectorAll(WORKS_ITEM);
@@ -1107,6 +1146,7 @@
       const items = gsap.utils.toArray(SCROLL_STAGGER);
       items.forEach((item) => {
         const children = gsap.utils.toArray(item.children);
+        const stagger = attr(0.1, item.getAttribute("gsap-scroll-stagger"));
         if (children.length === 0)
           return;
         const tl = scrollTL(item);
@@ -1119,7 +1159,7 @@
           {
             opacity: 1,
             y: "0rem",
-            stagger: { each: 0.1, from: "start" }
+            stagger: { each: stagger, from: "start" }
           }
         );
       });
