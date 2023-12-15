@@ -331,15 +331,17 @@ document.addEventListener('DOMContentLoaded', function () {
       toggleActions: 'play none none none',
       start: 'top 90%',
       end: 'top 75%',
+      duration: 0.6,
     };
     //override settings if an attribute is present and a valid type.
     settings.toggleActions = attr(settings.toggleActions, item.getAttribute('gsap-toggle-actions'));
     settings.scrub = attr(settings.scrub, item.getAttribute('gsap-scrub'));
     settings.start = attr(settings.start, item.getAttribute('gsap-scroll-start'));
     settings.end = attr(settings.end, item.getAttribute('gsap-scroll-end'));
+    settings.duration = attr(settings.duration, item.getAttribute('gsap-duration'));
     const tl = gsap.timeline({
       defaults: {
-        duration: 0.6,
+        duration: settings.duration,
         ease: 'power1.out',
       },
       scrollTrigger: {
