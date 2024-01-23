@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   gsap.registerPlugin(ScrollTrigger);
   gsap.registerPlugin(Flip);
-  console.log('dev');
+  // console.log('dev');
 
   //////////////////////////////
   //Global Variables
@@ -321,6 +321,36 @@ document.addEventListener('DOMContentLoaded', function () {
     return videoPlayer;
   };
 
+  const dynamicFormInputs = function () {
+    const inputWraps = gsap.utils.toArray('.form-field-wrapper');
+    const FIELD = '.form-input';
+    const LABEL = '.form-label';
+    const DYNAMIC_CLASS = 'is-dynamic';
+    const PLACEHOLDER_CLASS = 'is-placeholder';
+    //guard clause
+    if (inputWraps.length === 0) return;
+    //for each input field
+    inputWraps.forEach(function (item) {
+      const field = item.querySelector(FIELD);
+      const label = item.querySelector(LABEL);
+
+      // if field and label aren't found exit the function
+      if (!field || !label) return;
+
+      // if the label is not dynamic exit the function
+      if (!label.classList.contains(DYNAMIC_CLASS)) return;
+      field.addEventListener('focusin', function () {
+        label.classList.remove(PLACEHOLDER_CLASS);
+      });
+
+      field.addEventListener('focusout', function () {
+        if (field.value.length === 0) {
+          label.classList.add(PLACEHOLDER_CLASS);
+        }
+      });
+    });
+  };
+
   //////////////////////////////
   //GSAP Animations
 
@@ -579,10 +609,83 @@ document.addEventListener('DOMContentLoaded', function () {
     );
   };
 
+  const linktreeAnimation = function (isMobile) {
+    const cards = gsap.utils.toArray('[linktree-el="card"]');
+    const bgImage = gsap.utils.toArray('[linktree-el="bg"]');
+    const hideButton = document.querySelector('[linktree-el="hide"]');
+    let hidden = false;
+    if (cards.length === 0 || !hideButton) return;
+
+    const tl = gsap.timeline({
+      defaults: {
+        duration: 1,
+        ease: 'power1.inOut',
+      },
+    });
+    //create seperate tweens on Mobile and Desktop
+    if (isMobile) {
+      const mobileCards = [];
+      mobileCards.push(document.querySelector('[linktree-card="title"]'));
+      mobileCards.push(document.querySelector('[linktree-card="form"]'));
+      mobileCards.push(document.querySelector('[linktree-card="links"]'));
+      mobileCards.push(document.querySelector('[linktree-card="promo"]'));
+
+      if (mobileCards.includes(null) || mobileCards.length !== 4);
+      tl.fromTo(
+        mobileCards,
+        {
+          opacity: 0,
+          y: '3rem',
+        },
+        {
+          opacity: 1,
+          y: '0rem',
+          stagger: { each: 0.2, from: 'start' },
+        }
+      );
+    } else {
+      tl.fromTo(
+        cards,
+        {
+          opacity: 0,
+          y: '3rem',
+        },
+        {
+          opacity: 1,
+          y: '0rem',
+          stagger: { each: 0.2, from: 'start' },
+        }
+      );
+    }
+
+    tl.fromTo(
+      bgImage,
+      {
+        scale: 1,
+      },
+      {
+        scale: 1.1,
+      },
+      '<'
+    );
+    hideButton.addEventListener('click', function () {
+      if (hidden === false) {
+        tl.timeScale(1.5);
+        tl.reverse();
+        hidden = true;
+      } else {
+        tl.timeScale(1.5);
+        tl.play();
+        hidden = false;
+      }
+    });
+  };
+
   //////////////////////////////
   //Control Functions on page load
   passwordFunction();
   lightbox();
+  dynamicFormInputs();
 
   const gsapInit = function () {
     let mm = gsap.matchMedia();
@@ -597,6 +700,8 @@ document.addEventListener('DOMContentLoaded', function () {
       (context) => {
         let { isMobile, isTablet, isDesktop, reduceMotion } = context.conditions;
         // run animation functions
+        linktreeAnimation(isMobile);
+
         if (!reduceMotion) {
           scrollHeading();
           scrollEl();
