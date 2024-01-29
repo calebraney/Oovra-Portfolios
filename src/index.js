@@ -507,7 +507,7 @@ document.addEventListener('DOMContentLoaded', function () {
       tl.fromTo(
         front,
         {
-          y: '150%',
+          y: '200%',
           rotateZ: 15,
         },
         {
@@ -522,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function () {
           rotateZ: 0,
         },
         {
-          y: '-150%',
+          y: '-200%',
           rotateZ: -15,
         },
         0
