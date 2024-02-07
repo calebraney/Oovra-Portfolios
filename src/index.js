@@ -500,7 +500,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const tl = gsap.timeline({
         paused: true,
         defaults: {
-          duration: 0.3,
+          duration: 0.4,
           ease: 'power1.out',
         },
       });
@@ -508,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function () {
         front,
         {
           y: '200%',
-          rotateZ: 15,
+          rotateZ: 6,
         },
         {
           y: '0%',
@@ -523,7 +523,7 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         {
           y: '-200%',
-          rotateZ: -15,
+          rotateZ: -6,
         },
         0
       );
