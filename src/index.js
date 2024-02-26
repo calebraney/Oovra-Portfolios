@@ -363,6 +363,30 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   };
 
+  const navbarTransparent = function () {
+    const NAVBAR = '[navbar-component]';
+    const START_TRANSPARENT = 'navbar-start-transparent';
+    const CONTROL_TRANSPARENT = 'navbar-transparent';
+    const navbar = document.querySelector(NAVBAR);
+    if (!navbar) return;
+
+    const isTransparent = attr(false, navbar.getAttribute(START_TRANSPARENT));
+    if (!isTransparent) return;
+
+    // Attach the handleScroll function to the scroll event
+    window.addEventListener('scroll', function (e) {
+      // Check if the page is scrolled to the top
+      const scrollValue = window.scrollY;
+      console.log(scrollValue);
+      if (scrollValue === 0) {
+        // Set the attribute based on the scroll position
+        navbar.setAttribute(CONTROL_TRANSPARENT, 'true');
+      } else {
+        navbar.setAttribute(CONTROL_TRANSPARENT, 'false');
+      }
+    });
+  };
+
   //////////////////////////////
   //GSAP Animations
 
@@ -713,6 +737,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let { isMobile, isTablet, isDesktop, reduceMotion } = context.conditions;
         // run animation functions
         linktreeAnimation(isMobile);
+        navbarTransparent();
 
         if (!reduceMotion) {
           scrollHeading();
