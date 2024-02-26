@@ -334,9 +334,9 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   const dynamicFormInputs = function () {
-    const inputWraps = gsap.utils.toArray('.form-field-wrapper');
-    const FIELD = '.form-input';
-    const LABEL = '.form-label';
+    const inputWraps = gsap.utils.toArray('.form_field-wrapper');
+    const FIELD = '.form_input';
+    const LABEL = '.form_label';
     const DYNAMIC_CLASS = 'is-dynamic';
     const PLACEHOLDER_CLASS = 'is-placeholder';
     //guard clause
