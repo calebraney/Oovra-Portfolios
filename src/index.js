@@ -3,34 +3,18 @@ import { runSplit } from './utilities';
 
 document.addEventListener('DOMContentLoaded', function () {
   // Comment out for production
+  if (ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
+  }
+  if (Flip) {
+    gsap.registerPlugin(Flip);
+  }
 
-  gsap.registerPlugin(ScrollTrigger);
-  gsap.registerPlugin(Flip);
   // console.log('dev');
 
   //////////////////////////////
   //Global Variables
-  //Lightbox
-  const LIGHTBOX_COMPONENT = '[lightbox-el="component"]';
-  const LIGHTBOX_TRIGGER = '[lightbox-el="trigger"]';
-  const LIGHTBOX_CLOSE_BTN = '[lightbox-el="close"]';
-  const LIGHTBOX_NEXT_BTN = '[lightbox-el="next"]';
-  const LIGHTBOX_PREVIOUS_BTN = '[lightbox-el="previous"]';
-  const LIGHTBOX_IMAGE = '[lightbox-el="image"]';
-  const LIGHTBOX_THUMBNAIL = '[lightbox-el="thumbnail"]';
-  const LIGHTBOX_VID_THUMBNAIL = '[lightbox-el="video-thumbnail"]';
-  const LIGHTBOX_VID = '[lightbox-el="video"]';
-  const LIGHTBOX_VID_WRAP = '[lightbox-el="video-wrap"]';
-  const WORKS_ITEM = '[lightbox-el="works-item"]';
-  const WORKS_LIST = '[lightbox-el="works-list"]';
-  //Password
-  const PASSWORD_WRAP = '[pass-el="wrap"]';
-  const PASSWORD_COMPONENT = '[pass-el="component"]';
-  const PASSWORD_BG = '[pass-el="bg"]';
-  const PASSWORD_CARD = '[pass-el="card"]';
-  const PASSWORD_INPUT = '[pass-el="input"]';
-  const PASSWORD_BUTTON = '[pass-el="button"]';
-  const PASSWORD_ERROR = '[pass-el="error"]';
+
   //GSAP Selectors
   const SCROLL_HEADING = '[gsap-scroll="heading"]';
   const SCROLL_EL = '[gsap-scroll="el"]';
@@ -54,6 +38,15 @@ document.addEventListener('DOMContentLoaded', function () {
   // Functionality
 
   const passwordFunction = function () {
+    //Selectors
+    const PASSWORD_WRAP = '[pass-el="wrap"]';
+    const PASSWORD_COMPONENT = '[pass-el="component"]';
+    const PASSWORD_BG = '[pass-el="bg"]';
+    const PASSWORD_CARD = '[pass-el="card"]';
+    const PASSWORD_INPUT = '[pass-el="input"]';
+    const PASSWORD_BUTTON = '[pass-el="button"]';
+    const PASSWORD_ERROR = '[pass-el="error"]';
+    //Elements
     const passWrap = document.querySelector(PASSWORD_WRAP);
     const passComponent = document.querySelector(PASSWORD_COMPONENT);
     const passInput = document.querySelector(PASSWORD_INPUT);
@@ -63,7 +56,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const passCard = document.querySelector(PASSWORD_CARD);
     let passSet = false;
 
-    if (!passComponent || !passInput || !passButton) return;
+    // if no password element exists animate the header in and return the function
+    if (!passComponent || !passInput || !passButton) {
+      console.log(passComponent, passInput, passButton);
+      headerIn();
+      return;
+    }
 
     // function to check password an either hide modal or show
     const checkPassword = function () {
@@ -210,6 +208,20 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   const lightbox = function () {
+    //Selectors
+    const LIGHTBOX_COMPONENT = '[lightbox-el="component"]';
+    const LIGHTBOX_TRIGGER = '[lightbox-el="trigger"]';
+    const LIGHTBOX_CLOSE_BTN = '[lightbox-el="close"]';
+    const LIGHTBOX_NEXT_BTN = '[lightbox-el="next"]';
+    const LIGHTBOX_PREVIOUS_BTN = '[lightbox-el="previous"]';
+    const LIGHTBOX_IMAGE = '[lightbox-el="image"]';
+    const LIGHTBOX_THUMBNAIL = '[lightbox-el="thumbnail"]';
+    const LIGHTBOX_VID_THUMBNAIL = '[lightbox-el="video-thumbnail"]';
+    const LIGHTBOX_VID = '[lightbox-el="video"]';
+    const LIGHTBOX_VID_WRAP = '[lightbox-el="video-wrap"]';
+    const WORKS_ITEM = '[lightbox-el="works-item"]';
+    const WORKS_LIST = '[lightbox-el="works-list"]';
+    //Elements
     const worksItems = document.querySelectorAll(WORKS_ITEM);
     if (worksItems.length === 0) return;
     worksItems.forEach((item) => {
