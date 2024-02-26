@@ -58,7 +58,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // if no password element exists animate the header in and return the function
     if (!passComponent || !passInput || !passButton) {
-      console.log(passComponent, passInput, passButton);
       headerIn();
       return;
     }
@@ -377,7 +376,6 @@ document.addEventListener('DOMContentLoaded', function () {
     window.addEventListener('scroll', function (e) {
       // Check if the page is scrolled to the top
       const scrollValue = window.scrollY;
-      console.log(scrollValue);
       if (scrollValue === 0) {
         // Set the attribute based on the scroll position
         navbar.setAttribute(CONTROL_TRANSPARENT, 'true');
@@ -424,6 +422,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const scrollHeading = function () {
     const items = gsap.utils.toArray(SCROLL_HEADING);
     items.forEach((item) => {
+      if (!item) return;
       const splitText = runSplit(item);
       if (!splitText) return;
       item.style.opacity = 1;
@@ -507,6 +506,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const scrollStagger = function () {
     const items = gsap.utils.toArray(SCROLL_STAGGER);
     items.forEach((item) => {
+      if (!item) return;
       const children = gsap.utils.toArray(item.children);
       const stagger = attr(0.1, item.getAttribute('gsap-scroll-stagger'));
       if (children.length === 0) return;
@@ -579,6 +579,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const horLine = document.querySelector('.header_left .line-fill');
     const links = gsap.utils.toArray('.nav_layout .text-link_component');
     const navLine = document.querySelector('.nav_line .line-fill');
+    if (!header) return;
     const tl = gsap.timeline({
       defaults: {
         duration: 0.6,
