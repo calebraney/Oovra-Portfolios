@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let passSet = false;
 
     // if no password element exists animate the header in and return the function
-    if (!passComponent || !passInput || !passButton) {
+    if (!passComponent || !passWrap || !passInput || !passButton) {
       headerIn();
       return;
     }
