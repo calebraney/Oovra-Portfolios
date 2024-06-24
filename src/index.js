@@ -746,6 +746,8 @@ document.addEventListener('DOMContentLoaded', function () {
           scrollContainer();
           scrollStagger();
           scrollLine();
+        }
+        if (isDesktop) {
           textLinks();
         }
       }
