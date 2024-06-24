@@ -573,12 +573,12 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   const headerIn = function () {
-    const header = document.querySelector('.header_component');
+    const header = gsap.utils.toArray('[gsap-load="component"]');
     const h1 = gsap.utils.toArray('[gsap-load="h1"]');
-    const subtitles = gsap.utils.toArray('.header_left p');
-    const horLine = document.querySelector('.header_left .line-fill');
-    const links = gsap.utils.toArray('.nav_layout .text-link_component');
-    const navLine = document.querySelector('.nav_line .line-fill');
+    const subtitles = gsap.utils.toArray('[gsap-load="subtitle"]');
+    const horLine = gsap.utils.toArray('[gsap-load="line"]');
+    const links = gsap.utils.toArray('[gsap-load="link"]');
+    const navLine = gsap.utils.toArray('[gsap-load="nav-line"]');
     if (!header) return;
     const tl = gsap.timeline({
       defaults: {
